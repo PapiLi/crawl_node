@@ -94,9 +94,12 @@ class ClientConnection:
             raise ConnectionError("server not connected")
         if type(data_list) is not list:
             raise TypeError("param 'data_list' must be type of 'list'")
-        req = dict(id=self.__client_id__, cmd=__CMD_SUBMIT__, data=data_list)
+        send_data = json.dumps(data_list).encode("utf-8")
+        req = dict(id=self.__client_id__, cmd=__CMD_SUBMIT__, data={"length": len(send_data)})
         while True:
-            res = self.__request__(req)
+            self.__socket__.send(json.dumps(req).encode("utf-8"))
+            self.__socket__.send(send_data)
+            res = json.loads(self.__socket__.recv(1024).decode("utf-8"))
             if int(res["status"]) == __CODE_SUBMIT_SUCCESS__:
                 return 0
             elif int(res["status"]) == __CODE_SUBMIT_EXIT__:
