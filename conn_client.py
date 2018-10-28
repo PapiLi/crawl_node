@@ -21,6 +21,9 @@ __CODE_SUBMIT_SUCCESS__ = 400
 __CODE_SUBMIT_FAILED__ = 401
 __CODE_SUBMIT_EXIT__ = 410
 
+# define connection macros
+__BUFF_SIZE__ = 4096
+
 
 class ClientConnection:
     __socket__ = None
@@ -98,8 +101,9 @@ class ClientConnection:
         req = dict(id=self.__client_id__, cmd=__CMD_SUBMIT__, data={"length": len(send_data)})
         while True:
             self.__socket__.send(json.dumps(req).encode("utf-8"))
+            time.sleep(0.01)
             self.__socket__.send(send_data)
-            res = json.loads(self.__socket__.recv(1024).decode("utf-8"))
+            res = json.loads(self.__socket__.recv(__BUFF_SIZE__).decode("utf-8"))
             if int(res["status"]) == __CODE_SUBMIT_SUCCESS__:
                 return 0
             elif int(res["status"]) == __CODE_SUBMIT_EXIT__:
@@ -110,7 +114,5 @@ class ClientConnection:
 
     def __request__(self, req):
         self.__socket__.send(json.dumps(req).encode("utf-8"))
-        res = json.loads(self.__socket__.recv(1024).decode("utf-8"))
+        res = json.loads(self.__socket__.recv(__BUFF_SIZE__).decode("utf-8"))
         return res
-
-
